@@ -1,6 +1,7 @@
 # vim:set ft=dockerfile:
-FROM ubuntu:bionic
+FROM arm32v7/ubuntu:bionic
 
+RUN [ "cross-build-start" ]
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r mysql && useradd -r -g mysql mysql
 
@@ -76,16 +77,6 @@ ENV MARIADB_VERSION 1:10.1.46+maria-1~bionic
 # release-status:Stable
 # (https://downloads.mariadb.org/mariadb/+releases/)
 
-RUN set -e;\
-	echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/ubuntu bionic main" > /etc/apt/sources.list.d/mariadb.list; \
-	{ \
-		echo 'Package: *'; \
-		echo 'Pin: release o=MariaDB'; \
-		echo 'Pin-Priority: 999'; \
-	} > /etc/apt/preferences.d/mariadb
-# add repository pinning to make sure dependencies from this MariaDB repo are preferred over Debian dependencies
-#  libmariadbclient18 : Depends: libmysqlclient18 (= 5.5.42+maria-1~wheezy) but 5.5.43-0+deb7u1 is to be installed
-
 # the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
 # also, we set debconf keys to make APT a little quieter
 RUN set -ex; \
@@ -95,7 +86,7 @@ RUN set -ex; \
 	} | debconf-set-selections; \
 	apt-get update; \
 	apt-get install -y \
-		"mariadb-server=$MARIADB_VERSION" \
+		mariadb-server \
 # mariadb-backup is installed at the same time so that `mysql-common` is only installed once from just mariadb repos
 		mariadb-backup-10.1 \
 		socat \
@@ -118,6 +109,9 @@ VOLUME /var/lib/mysql
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
+
+RUN [ "cross-build-end" ]
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 3306
