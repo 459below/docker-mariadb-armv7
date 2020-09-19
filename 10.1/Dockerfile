@@ -89,7 +89,7 @@ RUN set -ex; \
 	apt-get install -y \
 		mariadb-server \
 # mariadb-backup is installed at the same time so that `mysql-common` is only installed once from just mariadb repos
-		mariadb-backup-10.1 \
+#		mariadb-backup-10.1 \
 		socat \
 	; \
 	rm -rf /var/lib/apt/lists/*; \
