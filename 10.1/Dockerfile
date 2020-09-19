@@ -1,7 +1,6 @@
 # vim:set ft=dockerfile:
 FROM arm32v7/ubuntu:bionic
 
-RUN [ "cross-build-start" ]
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r mysql && useradd -r -g mysql mysql
 
@@ -109,8 +108,6 @@ VOLUME /var/lib/mysql
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
-
-RUN [ "cross-build-end" ]
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
